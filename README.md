@@ -1,2 +1,2 @@
 # claude-fetch
-Terminal system information tool
+needs testing will test soon 
