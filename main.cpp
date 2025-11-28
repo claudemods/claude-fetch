@@ -539,7 +539,7 @@ int main() {
         my_fetch();
 
         // Display Install Info and Disk Info
-        system("yay -P --stats");
+        system("paru -P --stats");
         system("dysk -c label+default --filter \"disk <> HDD\" --sort filesystem -u binary");
         system("dysk -c label+default --filter \"disk <> SSD\" --sort filesystem -u binary");
 
