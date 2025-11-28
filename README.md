@@ -2,4 +2,4 @@
 needs testing will test soon 
 
 dependencies 
-- this requires dysk
+- this requires dysk and paru
