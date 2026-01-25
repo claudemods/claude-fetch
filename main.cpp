@@ -870,7 +870,7 @@ public:
             if (colon != std::string::npos) {
                 std::string gpu_info = lspci.substr(colon + 2);
                 if (gpu_info.find("Integrated") != std::string::npos) {
-                    gpu_info += " [In]";
+                    gpu_info += " [Integrated]";
                 }
                 return gpu_info;
             }
