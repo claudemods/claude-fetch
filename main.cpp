@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -24,46 +25,25 @@
 #include <netdb.h>
 #include <limits>
 #include <sys/ioctl.h>
+#include <regex>
 
 namespace fs = std::filesystem;
 
-// Colors class - All cyan theme
+// Colors class - All bright cyan theme
 class Colors {
 public:
     static const std::string RESET;
     static const std::string BOLD;
     static const std::string CYAN;
-    static const std::string GREEN;
-    static const std::string WHITE;
-    static const std::string MAGENTA;
-    static const std::string YELLOW;
-    static const std::string L_YELLOW;
-    static const std::string BLUE;
-    static const std::string RED;
     static const std::string L_CYAN;
-    static const std::string L_GREEN;
-    static const std::string L_BLUE;
-    static const std::string L_WHITE;
-    static const std::string D_CYAN;
 };
 
 const std::string Colors::RESET = "\033[0m";
 const std::string Colors::BOLD = "\033[1m";
-const std::string Colors::CYAN = "\033[36m";
-const std::string Colors::GREEN = "\033[32m";
-const std::string Colors::WHITE = "\033[37m";
-const std::string Colors::MAGENTA = "\033[35m";
-const std::string Colors::YELLOW = "\033[33m";
-const std::string Colors::L_YELLOW = "\033[93m";
-const std::string Colors::BLUE = "\033[34m";
-const std::string Colors::RED = "\033[31m";
+const std::string Colors::CYAN = "\033[96m";
 const std::string Colors::L_CYAN = "\033[96m";
-const std::string Colors::L_GREEN = "\033[92m";
-const std::string Colors::L_BLUE = "\033[94m";
-const std::string Colors::L_WHITE = "\033[97m";
-const std::string Colors::D_CYAN = "\033[36m";
 
-// ASCII art for claudefetch - All cyan
+// ASCII art for claudefetch - All bright cyan
 class AsciiArt {
 public:
     static const std::vector<std::string> ARCH;
@@ -71,53 +51,40 @@ public:
 };
 
 const std::vector<std::string> AsciiArt::ARCH = {
-    Colors::CYAN + "          .-------------------------." + Colors::RESET,
-    Colors::CYAN + "          .+=========================." + Colors::RESET,
-    Colors::CYAN + "         :++===++==================-       :++-" + Colors::RESET,
-    Colors::CYAN + "        :*++====+++++=============-        .==:" + Colors::RESET,
-    Colors::CYAN + "       -*+++=====+***++==========:" + Colors::RESET,
-    Colors::CYAN + "      =*++++========------------:" + Colors::RESET,
-    Colors::CYAN + "     =*+++++=====-                     ..." + Colors::RESET,
-    Colors::CYAN + "   .+*+++++=-===:                    .=+++=:" + Colors::RESET,
-    Colors::CYAN + "  :++++=====-==:                     -*****+" + Colors::RESET,
-    Colors::CYAN + " :++========-=.                      .=+**+." + Colors::RESET,
-    Colors::CYAN + " .+==========-.                          ." + Colors::RESET,
-    Colors::CYAN + " :+++++++====-                                .--==-." + Colors::RESET,
-    Colors::CYAN + "  :++==========.                             :+++++++:" + Colors::RESET,
-    Colors::CYAN + "   .-===========.                            =*****+*+" + Colors::RESET,
-    Colors::CYAN + "    .-===========:                           .+*****+:" + Colors::RESET,
-    Colors::CYAN + "      -=======++++:::::::::::::::::::::::::-:  .---:" + Colors::RESET,
-    Colors::CYAN + "       :======++++====+++******************=." + Colors::RESET,
-    Colors::CYAN + "        :=====+++==========++++++++++++++*-" + Colors::RESET,
-    Colors::CYAN + "         .====++==============++++++++++*-" + Colors::RESET,
-    Colors::CYAN + "          .===+==================+++++++:" + Colors::RESET,
-    Colors::CYAN + "           .-=======================+++:" + Colors::RESET,
-    Colors::CYAN + "             .........................." + Colors::RESET
+    Colors::L_CYAN + "                    " + Colors::RESET,
+    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
+    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
+    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_CYAN + "                    " + Colors::RESET
 };
 
 const std::vector<std::string> AsciiArt::DEFAULT = {
-    Colors::CYAN + "                    #####" + Colors::RESET,
-    Colors::CYAN + "                   #######" + Colors::RESET,
-    Colors::CYAN + "                   ##" + Colors::L_CYAN + "O" + Colors::CYAN + "#" + Colors::L_CYAN + "O" + Colors::CYAN + "##" + Colors::RESET,
-    Colors::CYAN + "                   #" + Colors::L_CYAN + "#####" + Colors::CYAN + "#" + Colors::RESET,
-    Colors::CYAN + "                 ##" + Colors::L_CYAN + "##" + Colors::CYAN + "###" + Colors::L_CYAN + "##" + Colors::CYAN + "##" + Colors::RESET,
-    Colors::CYAN + "                #" + Colors::L_CYAN + "##########" + Colors::CYAN + "##" + Colors::RESET,
-    Colors::CYAN + "               #" + Colors::L_CYAN + "#####" + Colors::CYAN + "####" + Colors::L_CYAN + "#####" + Colors::CYAN + "#" + Colors::RESET,
-    Colors::CYAN + "               ##" + Colors::L_CYAN + "#####" + Colors::CYAN + "####" + Colors::L_CYAN + "#####" + Colors::CYAN + "##" + Colors::RESET,
-    Colors::CYAN + "                ####################" + Colors::RESET,
-    Colors::CYAN + "                ##" + Colors::L_CYAN + "############" + Colors::CYAN + "##" + Colors::RESET,
-    Colors::CYAN + "                 ##################" + Colors::RESET,
-    Colors::CYAN + "                  ################" + Colors::RESET,
-    Colors::CYAN + "                   ##############" + Colors::RESET,
-    Colors::CYAN + "                    ############" + Colors::RESET,
-    Colors::CYAN + "                     ##########" + Colors::RESET,
-    Colors::CYAN + "                      ########" + Colors::RESET,
-    Colors::CYAN + "                       ######" + Colors::RESET,
-    Colors::CYAN + "                        ####" + Colors::RESET,
-    Colors::CYAN + "                         ##" + Colors::RESET
+    Colors::L_CYAN + "                    " + Colors::RESET,
+    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
+    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
+    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_CYAN + "                    " + Colors::RESET
 };
 
-// SystemInfo class
+// SystemInfo class - Arch Linux + KDE ONLY, NO DEFAULTS
 class SystemInfo {
 public:
     static std::string run_cmd(const std::string& cmd) {
@@ -125,12 +92,11 @@ public:
         std::string result;
         std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
         if (!pipe) {
-            return "unknown";
+            return "";
         }
         while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
             result += buffer.data();
         }
-        // Remove trailing newline
         if (!result.empty() && result[result.length()-1] == '\n') {
             result.erase(result.length()-1);
         }
@@ -138,27 +104,23 @@ public:
     }
 
     static std::string get_os() {
-        std::ifstream file("/etc/os-release");
-        if (file.is_open()) {
-            std::string line;
-            while (std::getline(file, line)) {
-                if (line.find("PRETTY_NAME=") == 0) {
-                    std::string name = line.substr(12);
-                    // Remove quotes
-                    if (name.front() == '"' && name.back() == '"') {
-                        name = name.substr(1, name.length() - 2);
-                    }
-                    return name + " " + get_arch();
-                } else if (line.find("NAME=") == 0) {
-                    std::string name = line.substr(5);
-                    if (name.front() == '"' && name.back() == '"') {
-                        name = name.substr(1, name.length() - 2);
-                    }
-                    return name + " " + get_arch();
+        std::string arch = get_arch();
+        if (arch.empty()) return "";
+
+        std::ifstream os_release("/etc/os-release");
+        if (!os_release.is_open()) return "";
+
+        std::string line;
+        while (std::getline(os_release, line)) {
+            if (line.find("PRETTY_NAME=") == 0) {
+                std::string name = line.substr(12);
+                if (name.front() == '"' && name.back() == '"') {
+                    name = name.substr(1, name.length() - 2);
                 }
+                return name + " " + arch;
             }
         }
-        return "unknown";
+        return "";
     }
 
     static std::string get_arch() {
@@ -166,7 +128,7 @@ public:
         if (uname(&buffer) == 0) {
             return buffer.machine;
         }
-        return "unknown";
+        return "";
     }
 
     static std::string get_hostname() {
@@ -174,197 +136,811 @@ public:
         if (gethostname(hostname, sizeof(hostname)) == 0) {
             return std::string(hostname);
         }
-        return "unknown";
+        return "";
+    }
+
+    static std::string get_host() {
+        std::string product_name = run_cmd("cat /sys/class/dmi/id/product_name 2>/dev/null");
+        std::string product_version = run_cmd("cat /sys/class/dmi/id/product_version 2>/dev/null");
+
+        std::string result;
+        if (!product_name.empty()) {
+            result = product_name;
+            if (!product_version.empty()) {
+                result += " (" + product_version + ")";
+            }
+        }
+        return result;
+    }
+
+    static std::string get_kernel() {
+        struct utsname buffer;
+        if (uname(&buffer) == 0) {
+            return std::string(buffer.release);
+        }
+        return "";
+    }
+
+    static std::string get_uptime() {
+        std::string uptime = run_cmd("uptime -p 2>/dev/null");
+        if (!uptime.empty()) {
+            if (uptime.find("up ") == 0) {
+                return uptime.substr(3);
+            }
+            return uptime;
+        }
+        return "";
+    }
+
+    static std::string get_packages() {
+        std::string packages = run_cmd("pacman -Qq 2>/dev/null | wc -l");
+        if (!packages.empty()) {
+            return packages + " (pacman)";
+        }
+        return "";
     }
 
     static std::string get_shell() {
+        // Method 1: Check SHELL environment variable
         char* shell_env = getenv("SHELL");
         if (shell_env != nullptr) {
             std::string shell_path = shell_env;
             size_t last_slash = shell_path.find_last_of("/");
             if (last_slash != std::string::npos) {
                 std::string shell_name = shell_path.substr(last_slash + 1);
-                std::string version = run_cmd(shell_name + " --version | head -1");
-                return shell_name + " " + version.substr(0, version.find('\n'));
+
+                // Get version for specific shells
+                if (shell_name == "bash") {
+                    std::string version = run_cmd("bash --version 2>/dev/null | head -1");
+                    if (!version.empty()) {
+                        std::regex version_regex(R"(GNU bash, version ([0-9]+\.[0-9]+\.[0-9]+))");
+                        std::smatch match;
+                        if (std::regex_search(version, match, version_regex)) {
+                            return "bash " + match.str(1);
+                        }
+                        return "bash";
+                    }
+                } else if (shell_name == "zsh") {
+                    std::string version = run_cmd("zsh --version 2>/dev/null");
+                    if (!version.empty()) {
+                        std::regex version_regex(R"(zsh ([0-9]+\.[0-9]+(?:\.[0-9]+)?))");
+                        std::smatch match;
+                        if (std::regex_search(version, match, version_regex)) {
+                            return "zsh " + match.str(1);
+                        }
+                        return "zsh";
+                    }
+                } else if (shell_name == "fish") {
+                    std::string version = run_cmd("fish --version 2>/dev/null");
+                    if (!version.empty()) {
+                        std::regex version_regex(R"(fish, version ([0-9]+\.[0-9]+\.[0-9]+))");
+                        std::smatch match;
+                        if (std::regex_search(version, match, version_regex)) {
+                            return "fish " + match.str(1);
+                        }
+                        return "fish";
+                    }
+                } else if (shell_name == "dash") {
+                    return "dash";
+                } else if (shell_name == "ksh") {
+                    std::string version = run_cmd("ksh --version 2>/dev/null | head -1");
+                    if (!version.empty()) {
+                        std::regex version_regex(R"(version (.+))");
+                        std::smatch match;
+                        if (std::regex_search(version, match, version_regex)) {
+                            return "ksh " + match.str(1);
+                        }
+                        return "ksh";
+                    }
+                } else if (shell_name == "tcsh") {
+                    std::string version = run_cmd("tcsh --version 2>/dev/null | head -1");
+                    if (!version.empty()) {
+                        return "tcsh";
+                    }
+                } else if (shell_name == "csh") {
+                    return "csh";
+                } else if (shell_name == "ash") {
+                    return "ash";
+                } else if (shell_name == "mksh") {
+                    std::string version = run_cmd("mksh --version 2>/dev/null | head -1");
+                    if (!version.empty()) {
+                        return "mksh";
+                    }
+                }
+                return shell_name;
             }
         }
-        return "unknown";
+
+        // Method 2: Check current process name
+        std::string proc_name = run_cmd("ps -p $$ -o comm= 2>/dev/null");
+        if (!proc_name.empty()) {
+            if (proc_name == "bash") {
+                std::string version = run_cmd("bash --version 2>/dev/null | head -1");
+                if (!version.empty()) {
+                    std::regex version_regex(R"(GNU bash, version ([0-9]+\.[0-9]+\.[0-9]+))");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "bash " + match.str(1);
+                    }
+                }
+                return "bash";
+            } else if (proc_name == "zsh") {
+                std::string version = run_cmd("zsh --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex(R"(zsh ([0-9]+\.[0-9]+(?:\.[0-9]+)?))");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "zsh " + match.str(1);
+                    }
+                }
+                return "zsh";
+            } else if (proc_name == "fish") {
+                std::string version = run_cmd("fish --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex(R"(fish, version ([0-9]+\.[0-9]+\.[0-9]+))");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "fish " + match.str(1);
+                    }
+                }
+                return "fish";
+            }
+            return proc_name;
+        }
+
+        // Method 3: Check parent process
+        std::string parent_cmd = run_cmd("ps -p $PPID -o comm= 2>/dev/null");
+        if (!parent_cmd.empty()) {
+            return parent_cmd;
+        }
+
+        return "";
+    }
+
+    static std::string get_display() {
+        // Get display information using xrandr with verbose output
+        std::string xrandr_output = run_cmd("xrandr --verbose 2>/dev/null");
+        if (xrandr_output.empty()) {
+            return "";
+        }
+
+        std::istringstream iss(xrandr_output);
+        std::string line;
+        std::vector<std::map<std::string, std::string>> displays;
+        std::map<std::string, std::string> current_display;
+        std::string current_name;
+        bool in_edid_section = false;
+        std::string edid_hex;
+
+        // Parse xrandr output
+        while (std::getline(iss, line)) {
+            // Check for connected display
+            if (line.find(" connected") != std::string::npos) {
+                if (!current_name.empty()) {
+                    displays.push_back(current_display);
+                }
+
+                current_display.clear();
+                in_edid_section = false;
+                edid_hex.clear();
+
+                std::istringstream line_stream(line);
+                line_stream >> current_name;
+                current_display["port"] = current_name;
+
+                // Get connection type
+                if (line.find("primary") != std::string::npos) {
+                    current_display["type"] = "Primary";
+                } else {
+                    current_display["type"] = "External";
+                }
+
+                // Try to get resolution
+                std::regex res_regex(R"((\d+)x(\d+))");
+                std::smatch res_match;
+                if (std::regex_search(line, res_match, res_regex)) {
+                    current_display["resolution"] = res_match[0];
+                }
+
+                // Try to get refresh rate from the same line
+                std::regex hz_regex(R"((\d+\.?\d*)Hz)");
+                std::smatch hz_match;
+                if (std::regex_search(line, hz_match, hz_regex)) {
+                    current_display["refresh_rate"] = hz_match[1];
+                }
+            }
+            // Look for EDID information
+            else if (line.find("EDID:") != std::string::npos) {
+                in_edid_section = true;
+                edid_hex.clear();
+            }
+            else if (in_edid_section) {
+                // Check if we're still in EDID section
+                if (line.find("\t\t") == 0 || line.find("    ") == 0) {
+                    // Parse EDID hex data
+                    std::istringstream hex_line(line);
+                    std::string hex_part;
+                    while (hex_line >> hex_part) {
+                        if (hex_part.length() == 2) {
+                            edid_hex += hex_part;
+                        }
+                    }
+                } else {
+                    in_edid_section = false;
+
+                    // Process collected EDID data
+                    if (edid_hex.length() >= 256) {
+                        // Extract monitor name from EDID (bytes 72-107)
+                        std::string monitor_name;
+                        for (int i = 144; i < 216 && i + 2 <= edid_hex.length(); i += 2) {
+                            std::string hex_byte = edid_hex.substr(i, 2);
+                            try {
+                                int byte_val = std::stoi(hex_byte, nullptr, 16);
+                                if (byte_val >= 32 && byte_val <= 126) {
+                                    monitor_name += static_cast<char>(byte_val);
+                                } else if (byte_val == 10) {
+                                    // Newline character
+                                    break;
+                                }
+                            } catch (...) {}
+                        }
+
+                        // Clean up monitor name
+                        size_t null_pos = monitor_name.find('\0');
+                        if (null_pos != std::string::npos) {
+                            monitor_name = monitor_name.substr(0, null_pos);
+                        }
+
+                        // Remove trailing spaces and control characters
+                        while (!monitor_name.empty() &&
+                            (monitor_name.back() == ' ' ||
+                            monitor_name.back() == '\n' ||
+                            monitor_name.back() == '\r')) {
+                            monitor_name.pop_back();
+                            }
+
+                            // Filter out non-alphanumeric monitor names (like "default")
+                            bool has_letters = false;
+                        bool has_numbers = false;
+                        for (char c : monitor_name) {
+                            if (std::isalpha(c)) has_letters = true;
+                            if (std::isdigit(c)) has_numbers = true;
+                        }
+
+                        if (!monitor_name.empty() && (has_letters || has_numbers)) {
+                            current_display["monitor_name"] = monitor_name;
+                        }
+
+                        // Try to get physical size from EDID (bytes 21-22 in cm)
+                        try {
+                            if (edid_hex.length() >= 44) {
+                                std::string width_hex = edid_hex.substr(42, 2);
+                                std::string height_hex = edid_hex.substr(44, 2);
+                                int width_cm = std::stoi(width_hex, nullptr, 16);
+                                int height_cm = std::stoi(height_hex, nullptr, 16);
+
+                                if (width_cm > 0 && height_cm > 0) {
+                                    // Convert to inches
+                                    double width_in = width_cm / 2.54;
+                                    double height_in = height_cm / 2.54;
+                                    double diagonal_in = sqrt(width_in * width_in + height_in * height_in);
+
+                                    std::stringstream size_ss;
+                                    size_ss << std::fixed << std::setprecision(1) << diagonal_in;
+                                    current_display["size"] = size_ss.str();
+                                }
+                            }
+                        } catch (...) {}
+                    }
+                }
+            }
+            // Look for specific display properties
+            else if (!current_name.empty()) {
+                // Get refresh rate if not already found
+                if (current_display.find("refresh_rate") == current_display.end()) {
+                    std::regex hz_regex(R"((\d+\.?\d*)Hz)");
+                    std::smatch hz_match;
+                    if (std::regex_search(line, hz_match, hz_regex)) {
+                        current_display["refresh_rate"] = hz_match[1];
+                    }
+                }
+            }
+        }
+
+        // Add the last display
+        if (!current_name.empty()) {
+            displays.push_back(current_display);
+        }
+
+        // Format the display information
+        if (displays.empty()) {
+            return "";
+        }
+
+        std::stringstream result;
+        for (size_t i = 0; i < displays.size(); i++) {
+            const auto& display = displays[i];
+
+            if (i > 0) {
+                result << ", ";
+            }
+
+            // Add monitor name if available (e.g., 26LG3000)
+            if (display.find("monitor_name") != display.end()) {
+                result << display.at("monitor_name");
+            } else if (display.find("port") != display.end()) {
+                // Fall back to port name if no monitor name
+                result << display.at("port");
+            }
+
+            // Add resolution
+            if (display.find("resolution") != display.end()) {
+                result << " " << display.at("resolution");
+            }
+
+            // Add size
+            if (display.find("size") != display.end()) {
+                result << " in " << display.at("size") << "\"";
+            }
+
+            // Add refresh rate
+            if (display.find("refresh_rate") != display.end()) {
+                result << ", " << display.at("refresh_rate") << " Hz";
+            }
+
+            // Add display type
+            if (display.find("type") != display.end()) {
+                result << " [" << display.at("type") << "]";
+            }
+        }
+
+        return result.str();
     }
 
     static std::string get_de() {
+        char* kde_session = getenv("KDE_SESSION_VERSION");
         char* xdg_desktop = getenv("XDG_CURRENT_DESKTOP");
-        if (xdg_desktop != nullptr) {
-            return xdg_desktop;
+
+        if (kde_session || (xdg_desktop && (std::string(xdg_desktop).find("KDE") != std::string::npos ||
+            std::string(xdg_desktop).find("Plasma") != std::string::npos))) {
+            std::string plasma_version = run_cmd("plasmashell --version 2>/dev/null | head -1");
+        if (!plasma_version.empty()) {
+            std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+            std::smatch match;
+            if (std::regex_search(plasma_version, match, version_regex)) {
+                return "KDE Plasma " + match.str();
+            }
         }
-        return "unknown";
+        return "KDE Plasma";
+            }
+            return "";
     }
 
     static std::string get_wm() {
-        char* xdg_desktop = getenv("XDG_CURRENT_DESKTOP");
-        if (xdg_desktop != nullptr) {
-            std::string desktop = xdg_desktop;
-            if (desktop.find("KDE") != std::string::npos || desktop.find("Plasma") != std::string::npos) {
-                return "KWin";
-            } else if (desktop.find("GNOME") != std::string::npos) {
-                return "Mutter";
-            } else if (desktop.find("XFCE") != std::string::npos) {
-                return "XFWM4";
-            }
+        char* wayland_display = getenv("WAYLAND_DISPLAY");
+        if (wayland_display != nullptr) {
+            return "KWin (Wayland)";
         }
-        return "unknown";
+        return "KWin";
     }
 
-    static std::string get_theme() {
-        std::string theme = run_cmd("kreadconfig5 --file kdeglobals --group KDE --key widgetStyle 2>/dev/null || echo Breeze");
-        if (theme == "unknown" || theme.empty()) {
-            return "Breeze";
+    static std::string get_wm_theme() {
+        std::string theme = run_cmd("kreadconfig6 --file kdeglobals --group KDE --key widgetStyle 2>/dev/null");
+        if (theme.empty()) {
+            theme = run_cmd("kreadconfig5 --file kdeglobals --group KDE --key widgetStyle 2>/dev/null");
         }
         return theme;
     }
 
+    static std::string get_theme() {
+        std::string qt_theme = run_cmd("kreadconfig6 --file kdeglobals --group KDE --key widgetStyle 2>/dev/null");
+        if (qt_theme.empty()) {
+            qt_theme = run_cmd("kreadconfig5 --file kdeglobals --group KDE --key widgetStyle 2>/dev/null");
+        }
+
+        std::string color_scheme = run_cmd("kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null");
+        if (color_scheme.empty()) {
+            color_scheme = run_cmd("kreadconfig5 --file kdeglobals --group General --key ColorScheme 2>/dev/null");
+        }
+
+        std::string gtk2_theme = run_cmd("grep 'gtk-theme-name' ~/.gtkrc-2.0 2>/dev/null | cut -d'=' -f2 | tr -d '\"'");
+        std::string gtk3_theme = run_cmd("grep 'gtk-theme-name' ~/.config/gtk-3.0/settings.ini 2>/dev/null | cut -d'=' -f2 | tr -d '\"'");
+
+        std::string result;
+        if (!qt_theme.empty()) {
+            result = qt_theme;
+            if (!color_scheme.empty()) {
+                result += " (" + color_scheme + ")";
+            }
+            result += " [Qt]";
+        }
+
+        if (!gtk2_theme.empty()) {
+            if (!result.empty()) result += ", ";
+            result += gtk2_theme + " [GTK2]";
+        }
+
+        if (!gtk3_theme.empty()) {
+            if (!result.empty()) result += ", ";
+            result += gtk3_theme + " [GTK3]";
+        }
+
+        return result;
+    }
+
     static std::string get_icons() {
-        std::string icons = run_cmd("kreadconfig5 --file kdeglobals --group Icons --key Theme 2>/dev/null || echo breeze-dark");
-        return icons;
+        std::string qt_icons = run_cmd("kreadconfig6 --file kdeglobals --group Icons --key Theme 2>/dev/null");
+        if (qt_icons.empty()) {
+            qt_icons = run_cmd("kreadconfig5 --file kdeglobals --group Icons --key Theme 2>/dev/null");
+        }
+
+        std::string gtk2_icons = run_cmd("grep 'gtk-icon-theme-name' ~/.gtkrc-2.0 2>/dev/null | cut -d'=' -f2 | tr -d '\"'");
+        std::string gtk3_icons = run_cmd("grep 'gtk-icon-theme-name' ~/.config/gtk-3.0/settings.ini 2>/dev/null | cut -d'=' -f2 | tr -d '\"'");
+
+        std::string result;
+        if (!qt_icons.empty()) {
+            result = qt_icons + " [Qt]";
+        }
+
+        if (!gtk2_icons.empty()) {
+            if (!result.empty()) result += ", ";
+            result += gtk2_icons + " [GTK2]";
+        }
+
+        if (!gtk3_icons.empty()) {
+            if (!result.empty()) result += ", ";
+            result += gtk3_icons + " [GTK3]";
+        }
+
+        return result;
     }
 
     static std::string get_font() {
-        std::string font = run_cmd("kreadconfig5 --file kdeglobals --group General --key font 2>/dev/null || echo 'Noto Sans 10'");
-        return font;
+        std::string qt_font = run_cmd("kreadconfig6 --file kdeglobals --group General --key font 2>/dev/null");
+        if (qt_font.empty()) {
+            qt_font = run_cmd("kreadconfig5 --file kdeglobals --group General --key font 2>/dev/null");
+        }
+
+        std::string gtk2_font = run_cmd("grep 'gtk-font-name' ~/.gtkrc-2.0 2>/dev/null | cut -d'=' -f2 | tr -d '\"'");
+        std::string gtk3_font = run_cmd("grep 'gtk-font-name' ~/.config/gtk-3.0/settings.ini 2>/dev/null | cut -d'=' -f2 | tr -d '\"'");
+
+        std::string result;
+        if (!qt_font.empty()) {
+            result = qt_font + " [Qt]";
+        }
+
+        if (!gtk2_font.empty()) {
+            if (!result.empty()) result += ", ";
+            result += gtk2_font + " [GTK2]";
+        }
+
+        if (!gtk3_font.empty()) {
+            if (!result.empty()) result += ", ";
+            result += gtk3_font + " [GTK3]";
+        }
+
+        return result;
     }
 
     static std::string get_cursor() {
-        std::string cursor = run_cmd("kreadconfig5 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null || echo breeze_cursors");
-        std::string size = run_cmd("kreadconfig5 --file kcminputrc --group Mouse --key cursorSize 2>/dev/null || echo 24");
-        return cursor + " (" + size + "px)";
+        std::string cursor_theme = run_cmd("kreadconfig6 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null");
+        if (cursor_theme.empty()) {
+            cursor_theme = run_cmd("kreadconfig5 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null");
+        }
+
+        std::string cursor_size = run_cmd("kreadconfig6 --file kcminputrc --group Mouse --key cursorSize 2>/dev/null");
+        if (cursor_size.empty()) {
+            cursor_size = run_cmd("kreadconfig5 --file kcminputrc --group Mouse --key cursorSize 2>/dev/null");
+        }
+
+        if (!cursor_theme.empty()) {
+            if (!cursor_size.empty()) {
+                return cursor_theme + " (" + cursor_size + "px)";
+            }
+            return cursor_theme;
+        }
+        return "";
     }
 
     static std::string get_terminal() {
-        char* term = getenv("TERM_PROGRAM");
-        if (term != nullptr) {
-            return term;
+        // Check multiple methods for terminal detection
+
+        // Method 1: Check TERM_PROGRAM environment variable (used by many terminals)
+        char* term_program = getenv("TERM_PROGRAM");
+        if (term_program != nullptr) {
+            std::string term = term_program;
+            if (term == "Konsole") {
+                std::string version = run_cmd("konsole --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "Konsole " + match.str();
+                    }
+                }
+                return "Konsole";
+            } else if (term == "GNOME Terminal") {
+                std::string version = run_cmd("gnome-terminal --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "GNOME Terminal " + match.str();
+                    }
+                }
+                return "GNOME Terminal";
+            } else if (term == "iTerm.app") {
+                return "iTerm2";
+            }
         }
-        term = getenv("TERM");
-        if (term != nullptr) {
-            return term;
+
+        // Method 2: Check TERMINAL_EMULATOR (used by some terminals)
+        char* term_emulator = getenv("TERMINAL_EMULATOR");
+        if (term_emulator != nullptr) {
+            std::string term = term_emulator;
+            if (term.find("Konsole") != std::string::npos) {
+                return "Konsole";
+            } else if (term.find("gnome-terminal") != std::string::npos) {
+                return "GNOME Terminal";
+            }
         }
-        return "unknown";
+
+        // Method 3: Get parent process name
+        std::string parent_cmd = run_cmd("ps -p $PPID -o comm= 2>/dev/null");
+        if (!parent_cmd.empty()) {
+            if (parent_cmd == "konsole") {
+                std::string version = run_cmd("konsole --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "Konsole " + match.str();
+                    }
+                }
+                return "Konsole";
+            } else if (parent_cmd == "gnome-terminal") {
+                std::string version = run_cmd("gnome-terminal --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "GNOME Terminal " + match.str();
+                    }
+                }
+                return "GNOME Terminal";
+            } else if (parent_cmd == "xfce4-terminal") {
+                std::string version = run_cmd("xfce4-terminal --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "XFCE Terminal " + match.str();
+                    }
+                }
+                return "XFCE Terminal";
+            } else if (parent_cmd == "terminator") {
+                std::string version = run_cmd("terminator --version 2>/dev/null | head -1");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "Terminator " + match.str();
+                    }
+                }
+                return "Terminator";
+            } else if (parent_cmd == "tilix") {
+                std::string version = run_cmd("tilix --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "Tilix " + match.str();
+                    }
+                }
+                return "Tilix";
+            } else if (parent_cmd == "alacritty") {
+                std::string version = run_cmd("alacritty --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "Alacritty " + match.str();
+                    }
+                }
+                return "Alacritty";
+            } else if (parent_cmd == "kitty") {
+                std::string version = run_cmd("kitty --version 2>/dev/null");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "Kitty " + match.str();
+                    }
+                }
+                return "Kitty";
+            } else if (parent_cmd == "xterm") {
+                std::string version = run_cmd("xterm -version 2>/dev/null | head -1");
+                if (!version.empty()) {
+                    std::regex version_regex("[0-9]+\\.[0-9]+");
+                    std::smatch match;
+                    if (std::regex_search(version, match, version_regex)) {
+                        return "XTerm " + match.str();
+                    }
+                }
+                return "XTerm";
+            } else if (parent_cmd == "rxvt") {
+                return "Rxvt";
+            } else if (parent_cmd == "urxvt") {
+                return "URxvt";
+            } else if (parent_cmd == "mate-terminal") {
+                return "MATE Terminal";
+            } else if (parent_cmd == "lxterminal") {
+                return "LXTerminal";
+            } else if (parent_cmd == "terminology") {
+                return "Terminology";
+            }
+        }
+
+        // Method 4: Check for specific terminal environment variables
+        if (getenv("KONSOLE_VERSION") != nullptr) {
+            return "Konsole";
+        } else if (getenv("GNOME_TERMINAL_SCREEN") != nullptr) {
+            return "GNOME Terminal";
+        } else if (getenv("XTERM_VERSION") != nullptr) {
+            return "XTerm";
+        } else if (getenv("ALACRITTY_LOG") != nullptr) {
+            return "Alacritty";
+        } else if (getenv("KITTY_WINDOW_ID") != nullptr) {
+            return "Kitty";
+        }
+
+        // Method 5: Check $TERM environment variable (fallback)
+        char* term_env = getenv("TERM");
+        if (term_env != nullptr) {
+            std::string term = term_env;
+            if (term == "xterm-kitty") {
+                return "Kitty";
+            } else if (term == "xterm-termite") {
+                return "Termite";
+            } else if (term.find("rxvt") != std::string::npos) {
+                return "Rxvt";
+            }
+        }
+
+        // Method 6: Try to detect by checking desktop entry
+        std::string desktop_term = run_cmd("xdg-mime query default x-scheme-handler/terminal 2>/dev/null");
+        if (!desktop_term.empty()) {
+            if (desktop_term.find("konsole") != std::string::npos) return "Konsole";
+            if (desktop_term.find("gnome-terminal") != std::string::npos) return "GNOME Terminal";
+            if (desktop_term.find("xfce4-terminal") != std::string::npos) return "XFCE Terminal";
+            if (desktop_term.find("terminator") != std::string::npos) return "Terminator";
+            if (desktop_term.find("tilix") != std::string::npos) return "Tilix";
+        }
+
+        // Method 7: Fallback to checking current process
+        std::string self_cmd = run_cmd("ps -p $$ -o comm= 2>/dev/null");
+        if (!self_cmd.empty()) {
+            return self_cmd;
+        }
+
+        return "";
     }
 
     static std::string get_cpu() {
-        try {
-            std::ifstream file("/proc/cpuinfo");
-            if (file.is_open()) {
-                std::string line;
-                std::string model;
-                int cores = 0;
-                float max_freq = 0.0;
+        std::ifstream cpuinfo("/proc/cpuinfo");
+        if (!cpuinfo.is_open()) return "";
 
-                while (std::getline(file, line)) {
-                    if (line.find("model name") == 0) {
-                        size_t pos = line.find(": ");
-                        if (pos != std::string::npos) {
-                            model = line.substr(pos + 2);
-                        }
-                    } else if (line.find("cpu cores") == 0) {
-                        size_t pos = line.find(": ");
-                        if (pos != std::string::npos) {
-                            cores = std::stoi(line.substr(pos + 2));
-                        }
-                    } else if (line.find("cpu MHz") == 0) {
-                        size_t pos = line.find(": ");
-                        if (pos != std::string::npos) {
-                            float freq = std::stof(line.substr(pos + 2)) / 1000.0;
-                            if (freq > max_freq) max_freq = freq;
-                        }
-                    }
+        std::string line;
+        std::string model;
+        int cores = 0;
+        float max_freq = 0.0;
+
+        while (std::getline(cpuinfo, line)) {
+            if (line.find("model name") == 0) {
+                size_t pos = line.find(": ");
+                if (pos != std::string::npos) {
+                    model = line.substr(pos + 2);
                 }
-
-                if (!model.empty()) {
-                    std::stringstream ss;
-                    ss << model << " (" << cores << ") @ " << std::fixed << std::setprecision(2) << max_freq << " GHz";
-                    return ss.str();
+            } else if (line.find("cpu cores") == 0) {
+                size_t pos = line.find(": ");
+                if (pos != std::string::npos) {
+                    cores = std::stoi(line.substr(pos + 2));
+                }
+            } else if (line.find("cpu MHz") == 0) {
+                size_t pos = line.find(": ");
+                if (pos != std::string::npos) {
+                    float freq = std::stof(line.substr(pos + 2)) / 1000.0;
+                    if (freq > max_freq) max_freq = freq;
                 }
             }
-        } catch (...) {}
-        return "unknown";
+        }
+
+        if (!model.empty() && cores > 0 && max_freq > 0.0) {
+            std::stringstream ss;
+            ss << model << " (" << cores << ") @ " << std::fixed << std::setprecision(2) << max_freq << " GHz";
+            return ss.str();
+        }
+        return "";
     }
 
     static std::string get_gpu() {
-        try {
-            std::string lspci = run_cmd("lspci | grep -E 'VGA|3D|Display' | head -1");
-            if (!lspci.empty() && lspci != "unknown") {
-                size_t colon = lspci.find(": ");
-                if (colon != std::string::npos) {
-                    std::string gpu_info = lspci.substr(colon + 2);
-                    // Trim and clean the GPU string
-                    if (gpu_info.length() > 60) {
-                        gpu_info = gpu_info.substr(0, 57) + "...";
-                    }
-                    return gpu_info;
+        std::string lspci = run_cmd("lspci | grep -E 'VGA|3D|Display' | head -1");
+        if (!lspci.empty()) {
+            size_t colon = lspci.find(": ");
+            if (colon != std::string::npos) {
+                std::string gpu_info = lspci.substr(colon + 2);
+                if (gpu_info.find("Integrated") != std::string::npos) {
+                    gpu_info += " [In]";
                 }
+                return gpu_info;
             }
-        } catch (...) {}
-        return "unknown";
+        }
+        return "";
     }
 
     static std::string get_memory() {
-        try {
-            std::string meminfo = run_cmd("free -m");
-            std::istringstream iss(meminfo);
-            std::string line;
-            std::getline(iss, line); // Skip header
+        std::ifstream meminfo("/proc/meminfo");
+        if (!meminfo.is_open()) return "";
 
-            if (std::getline(iss, line)) {
-                std::istringstream line_stream(line);
-                std::vector<std::string> tokens;
-                std::string token;
+        long total_kb = 0, free_kb = 0, buffers_kb = 0, cached_kb = 0;
+        std::string line;
 
-                while (line_stream >> token) {
-                    tokens.push_back(token);
-                }
-
-                if (tokens.size() >= 6) {
-                    float total = std::stof(tokens[1]) / 1024.0;
-                    float used = (std::stof(tokens[1]) - std::stof(tokens[3]) - std::stof(tokens[5])) / 1024.0;
-                    int percent = static_cast<int>((used / total) * 100);
-
-                    std::stringstream ss;
-                    ss << std::fixed << std::setprecision(2) << used << " GiB / " << total << " GiB (" << percent << "%)";
-                    return ss.str();
-                }
+        while (std::getline(meminfo, line)) {
+            if (line.find("MemTotal:") == 0) {
+                total_kb = std::stol(line.substr(9));
+            } else if (line.find("MemFree:") == 0) {
+                free_kb = std::stol(line.substr(8));
+            } else if (line.find("Buffers:") == 0) {
+                buffers_kb = std::stol(line.substr(8));
+            } else if (line.find("Cached:") == 0) {
+                cached_kb = std::stol(line.substr(7));
             }
-        } catch (...) {}
-        return "unknown";
+        }
+
+        if (total_kb > 0) {
+            long used_kb = total_kb - free_kb - buffers_kb - cached_kb;
+            float total_gb = total_kb / 1048576.0;
+            float used_gb = used_kb / 1048576.0;
+            int percent = (used_kb * 100) / total_kb;
+
+            std::stringstream ss;
+            ss << std::fixed << std::setprecision(2) << used_gb << " GiB / " << total_gb << " GiB (" << percent << "%)";
+            return ss.str();
+        }
+        return "";
     }
 
     static std::string get_swap() {
-        try {
-            std::string meminfo = run_cmd("free -h");
-            std::istringstream iss(meminfo);
-            std::string line;
-            std::getline(iss, line); // Skip first header
-            std::getline(iss, line); // Skip memory line
-            std::getline(iss, line); // This should be swap line
+        std::ifstream meminfo("/proc/meminfo");
+        if (!meminfo.is_open()) return "";
 
-            std::istringstream line_stream(line);
-            std::vector<std::string> tokens;
-            std::string token;
+        long total_kb = 0, free_kb = 0;
+        std::string line;
 
-            while (line_stream >> token) {
-                tokens.push_back(token);
+        while (std::getline(meminfo, line)) {
+            if (line.find("SwapTotal:") == 0) {
+                total_kb = std::stol(line.substr(10));
+            } else if (line.find("SwapFree:") == 0) {
+                free_kb = std::stol(line.substr(9));
             }
+        }
 
-            if (tokens.size() >= 6) {
-                return tokens[2] + " / " + tokens[1] + " (" + tokens[4] + ")";
-            }
-        } catch (...) {}
-        return "unknown";
+        if (total_kb > 0) {
+            long used_kb = total_kb - free_kb;
+            float total_gb = total_kb / 1048576.0;
+            float used_gb = used_kb / 1048576.0;
+            int percent = (used_kb * 100) / total_kb;
+
+            std::stringstream ss;
+            ss << std::fixed << std::setprecision(2) << used_gb << " GiB / " << total_gb << " GiB (" << percent << "%)";
+            return ss.str();
+        }
+        return "";
     }
 
-    static std::string get_disk_usage() {
-        try {
-            // Get detailed disk information including filesystem type
-            std::string df = run_cmd("df -h / | tail -1");
+    static std::string get_disk() {
+        std::string df = run_cmd("df -h / 2>/dev/null | tail -1");
+        if (!df.empty()) {
             std::istringstream iss(df);
             std::vector<std::string> tokens;
             std::string token;
@@ -374,26 +950,15 @@ public:
             }
 
             if (tokens.size() >= 6) {
-                // Get filesystem type
-                std::string filesystem = run_cmd("findmnt -n -o FSTYPE /");
-                if (filesystem.empty() || filesystem == "unknown") {
-                    filesystem = run_cmd("lsblk -f / | tail -1 | awk '{print $2}'");
-                }
-
-                // Parse sizes for better formatting
                 std::string used = tokens[2];
                 std::string total = tokens[1];
                 std::string percent = tokens[4];
 
-                // Remove 'G' from sizes for GiB formatting
-                if (used.find('G') != std::string::npos) {
-                    used = used.substr(0, used.find('G'));
-                }
-                if (total.find('G') != std::string::npos) {
-                    total = total.substr(0, total.find('G'));
+                std::string filesystem = run_cmd("findmnt -n -o FSTYPE / 2>/dev/null");
+                if (filesystem.empty()) {
+                    filesystem = run_cmd("lsblk -f / 2>/dev/null | tail -1 | awk '{print $2}'");
                 }
 
-                // Calculate in GiB with decimals
                 try {
                     float used_gb = std::stof(used);
                     float total_gb = std::stof(total);
@@ -405,194 +970,129 @@ public:
                     << filesystem;
                     return ss.str();
                 } catch (...) {
-                    // Fallback if conversion fails
-                    return tokens[2] + " / " + tokens[1] + " (" + tokens[4] + ") - " + filesystem;
+                    return used + " / " + total + " (" + percent + ") - " + filesystem;
                 }
             }
-        } catch (...) {}
-        return "unknown";
-    }
-
-    static std::string get_uptime() {
-        try {
-            std::string uptime = run_cmd("uptime -p");
-            if (!uptime.empty() && uptime != "unknown") {
-                // Remove "up " prefix
-                if (uptime.find("up ") == 0) {
-                    uptime = uptime.substr(3);
-                }
-                return uptime;
-            }
-        } catch (...) {}
-        return "unknown";
-    }
-
-    static std::string get_packages() {
-        try {
-            std::string packages = run_cmd("pacman -Qq | wc -l");
-            if (!packages.empty() && packages != "unknown") {
-                return packages + " (pacman)";
-            }
-        } catch (...) {}
-        return "unknown";
-    }
-
-    static std::string get_kernel() {
-        struct utsname buffer;
-        if (uname(&buffer) == 0) {
-            return std::string(buffer.release);
         }
-        return "unknown";
-    }
-
-    static std::string get_display_info() {
-        try {
-            std::string xrandr = run_cmd("xrandr --current 2>/dev/null | grep ' connected' | head -1");
-            if (!xrandr.empty() && xrandr != "unknown") {
-                // Extract resolution
-                size_t res_start = xrandr.find(" ");
-                size_t res_end = xrandr.find("+");
-                if (res_start != std::string::npos && res_end != std::string::npos) {
-                    std::string resolution = xrandr.substr(res_start + 1, res_end - res_start - 1);
-                    return resolution + " @ 60 Hz";
-                }
-            }
-        } catch (...) {}
-        return "unknown";
+        return "";
     }
 
     static std::string get_local_ip() {
-        try {
-            struct ifaddrs *ifaddr, *ifa;
-            char host[NI_MAXHOST];
-            char netmask[NI_MAXHOST];
+        struct ifaddrs *ifaddr, *ifa;
+        if (getifaddrs(&ifaddr) == -1) return "";
 
-            if (getifaddrs(&ifaddr) == -1) {
-                return "unknown";
-            }
+        for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+            if (ifa->ifa_addr == nullptr) continue;
 
-            // First try to get IPv4 address on active interfaces
-            for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
-                if (ifa->ifa_addr == nullptr) continue;
+            if (ifa->ifa_addr->sa_family == AF_INET) {
+                std::string ifname = ifa->ifa_name;
+                if (ifname.find("lo") == 0) continue;
 
-                // Check for IPv4 address on non-loopback interfaces
-                if (ifa->ifa_addr->sa_family == AF_INET) {
-                    std::string ifname = ifa->ifa_name;
-                    // Skip loopback and virtual interfaces
-                    if (ifname.find("lo") == 0 ||
-                        ifname.find("docker") != std::string::npos ||
-                        ifname.find("virbr") != std::string::npos ||
-                        ifname.find("veth") != std::string::npos) {
-                        continue;
+                char host[NI_MAXHOST];
+                int s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
+                                    host, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
+                if (s == 0) {
+                    struct sockaddr_in *netmask_addr = (struct sockaddr_in *)ifa->ifa_netmask;
+                    if (netmask_addr != nullptr) {
+                        unsigned long netmask_val = ntohl(netmask_addr->sin_addr.s_addr);
+                        int prefix_length = 0;
+                        while (netmask_val) {
+                            prefix_length += netmask_val & 1;
+                            netmask_val >>= 1;
                         }
 
-                        int s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
-                                            host, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
-
-                        // Get netmask
-                        if (ifa->ifa_netmask != nullptr) {
-                            getnameinfo(ifa->ifa_netmask, sizeof(struct sockaddr_in),
-                                        netmask, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
-
-                            // Calculate prefix length
-                            struct sockaddr_in *netmask_addr = (struct sockaddr_in *)ifa->ifa_netmask;
-                            unsigned long netmask_val = ntohl(netmask_addr->sin_addr.s_addr);
-                            int prefix_length = 0;
-                            while (netmask_val) {
-                                prefix_length += netmask_val & 1;
-                                netmask_val >>= 1;
-                            }
-
-                            if (s == 0) {
-                                freeifaddrs(ifaddr);
-                                std::stringstream ss;
-                                ss << host << "/" << prefix_length << " (" << ifname << ")";
-                                return ss.str();
-                            }
-                        }
-                }
-            }
-
-            freeifaddrs(ifaddr);
-
-            // Fallback: Try ip command for interface name
-            std::string ip_cmd = run_cmd("ip -4 addr show | grep -v 127.0.0.1 | grep inet | head -1");
-            if (!ip_cmd.empty() && ip_cmd != "unknown") {
-                // Parse output like: inet 192.168.1.10/24 brd 192.168.1.255 scope global wlan0
-                std::istringstream iss(ip_cmd);
-                std::string token;
-                std::vector<std::string> tokens;
-                while (iss >> token) {
-                    tokens.push_back(token);
-                }
-
-                if (tokens.size() >= 7) {
-                    std::string ip_with_prefix = tokens[1]; // e.g., 192.168.1.10/24
-                    std::string interface = tokens[6]; // interface name
-
-                    // Extract just the prefix length
-                    size_t slash_pos = ip_with_prefix.find('/');
-                    if (slash_pos != std::string::npos) {
-                        std::string ip = ip_with_prefix.substr(0, slash_pos);
-                        std::string prefix = ip_with_prefix.substr(slash_pos + 1);
-                        return ip + "/" + prefix + " (" + interface + ")";
+                        freeifaddrs(ifaddr);
+                        std::stringstream ss;
+                        ss << "(" << ifname << "): " << host << "/" << prefix_length;
+                        return ss.str();
                     }
                 }
             }
+        }
 
-        } catch (...) {}
-        return "unknown";
+        freeifaddrs(ifaddr);
+        return "";
     }
 
     static std::string get_locale() {
         char* locale = getenv("LANG");
         if (locale != nullptr) {
-            return locale;
+            return std::string(locale);
         }
-        return "unknown";
+        return "";
     }
 };
 
-// Get terminal width
+// Get terminal width - Improved version
 int get_terminal_width() {
+    // First try ioctl
     struct winsize w;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0 && w.ws_col > 0) {
         return w.ws_col;
     }
-    // Fallback
+
+    // Then try environment variables
     char* columns = getenv("COLUMNS");
     if (columns) {
-        return atoi(columns);
+        try {
+            int cols = std::stoi(columns);
+            if (cols > 0) return cols;
+        } catch (...) {
+            // Ignore conversion errors
+        }
     }
-    return 120; // Default to 120 columns for better display
+
+    // Try tput command as fallback
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("tput cols 2>/dev/null", "r"), pclose);
+    if (pipe) {
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+            result += buffer.data();
+        }
+        if (!result.empty()) {
+            try {
+                int cols = std::stoi(result);
+                if (cols > 0) return cols;
+            } catch (...) {
+                // Ignore conversion errors
+            }
+        }
+    }
+
+    // Default fallback
+    return 120;
 }
 
-// UI class for claudefetch-style display - FIXED VERSION
+// UI class for claudefetch-style display
 class ClaudeFetchUI {
 public:
     static void print_label_value(const std::string& label, const std::string& value, int line_num = 0) {
-        // Determine if we should print ASCII art on this line
+        // Fixed starting position - 3cm from ASCII art (approx 12 character spaces)
+        // ASCII art is 20 chars wide + 12 spaces = 32
+        int label_start = 32;
+
+        // Calculate max label width
+        static const int MAX_LABEL_WIDTH = 12;
+
         if (line_num < AsciiArt::ARCH.size()) {
-            // Print ASCII art line
+            // Print the ASCII art line
             std::cout << AsciiArt::ARCH[line_num];
 
-            // Calculate position for system info (ASCII art is 50 chars wide)
-            int info_start = 55; // ASCII art width (50) + 5 spaces
-
-            // Move cursor to info position on same line
-            std::cout << "\033[" << (line_num + 1) << ";" << info_start << "H";
+            // Add spaces for 3cm gap
+            std::cout << std::string(12, ' ');
 
             // Print label and value
-            std::cout << Colors::BOLD << Colors::L_CYAN << std::left << std::setw(12) << label
+            std::cout << Colors::BOLD << Colors::L_CYAN
+            << std::left << std::setw(MAX_LABEL_WIDTH) << label
             << Colors::RESET << Colors::L_CYAN << value << Colors::RESET;
         } else {
-            // Lines after ASCII art - just print info aligned
-            int info_start = 55;
-            std::cout << std::string(info_start, ' ')
-            << Colors::BOLD << Colors::L_CYAN << std::left << std::setw(12) << label
+            // For lines beyond ASCII art, just indent
+            std::cout << std::string(label_start, ' ')
+            << Colors::BOLD << Colors::L_CYAN
+            << std::left << std::setw(MAX_LABEL_WIDTH) << label
             << Colors::RESET << Colors::L_CYAN << value << Colors::RESET;
         }
-
         std::cout << std::endl;
     }
 
@@ -608,19 +1108,19 @@ public:
     }
 
     static void display_all_info() {
-        // Clear screen first
-        std::cout << "\033[2J\033[1;1H"; // Clear screen and move to top-left
+        std::cout << "\033[2J\033[1;1H";
 
-        // Get all system info
+        // Get all system info - NO DEFAULTS
         std::string os = SystemInfo::get_os();
-        std::string host = SystemInfo::run_cmd("cat /sys/class/dmi/id/product_name 2>/dev/null || echo 'unknown'");
+        std::string host = SystemInfo::get_host();
         std::string kernel = SystemInfo::get_kernel();
         std::string uptime = SystemInfo::get_uptime();
         std::string packages = SystemInfo::get_packages();
         std::string shell = SystemInfo::get_shell();
-        std::string display = SystemInfo::get_display_info();
+        std::string display = SystemInfo::get_display();
         std::string de = SystemInfo::get_de();
         std::string wm = SystemInfo::get_wm();
+        std::string wm_theme = SystemInfo::get_wm_theme();
         std::string theme = SystemInfo::get_theme();
         std::string icons = SystemInfo::get_icons();
         std::string font = SystemInfo::get_font();
@@ -630,7 +1130,7 @@ public:
         std::string gpu = SystemInfo::get_gpu();
         std::string memory = SystemInfo::get_memory();
         std::string swap = SystemInfo::get_swap();
-        std::string disk = SystemInfo::get_disk_usage();
+        std::string disk = SystemInfo::get_disk();
         std::string local_ip = SystemInfo::get_local_ip();
         std::string locale = SystemInfo::get_locale();
 
@@ -664,28 +1164,25 @@ public:
         print_label_value("WM:", wm, line_num++);
 
         // Line 10: WM Theme
-        print_label_value("WM Theme:", theme, line_num++);
+        print_label_value("WM Theme:", wm_theme, line_num++);
 
         // Line 11: Theme
-        std::string theme_full = theme + " [Qt], Breeze-Dark [GTK]";
-        if (theme_full.length() > 60) {
-            theme_full = theme_full.substr(0, 57) + "...";
+        if (theme.length() > 60) {
+            theme = theme.substr(0, 57) + "...";
         }
-        print_label_value("Theme:", theme_full, line_num++);
+        print_label_value("Theme:", theme, line_num++);
 
         // Line 12: Icons
-        std::string icons_full = icons + " [Qt], " + icons + " [GTK]";
-        if (icons_full.length() > 60) {
-            icons_full = icons_full.substr(0, 57) + "...";
+        if (icons.length() > 60) {
+            icons = icons.substr(0, 57) + "...";
         }
-        print_label_value("Icons:", icons_full, line_num++);
+        print_label_value("Icons:", icons, line_num++);
 
         // Line 13: Font
-        std::string font_full = font + " [Qt], " + font + " [GTK]";
-        if (font_full.length() > 60) {
-            font_full = font_full.substr(0, 57) + "...";
+        if (font.length() > 60) {
+            font = font.substr(0, 57) + "...";
         }
-        print_label_value("Font:", font_full, line_num++);
+        print_label_value("Font:", font, line_num++);
 
         // Line 14: Cursor
         print_label_value("Cursor:", cursor, line_num++);
@@ -705,7 +1202,7 @@ public:
         // Line 19: Swap
         print_label_value("Swap:", swap, line_num++);
 
-        // Line 20: Disk (/)
+        // Line 20: Disk
         print_label_value("Disk (/):", disk, line_num++);
 
         // Line 21: Local IP
@@ -714,30 +1211,33 @@ public:
         // Line 22: Locale
         print_label_value("Locale:", locale, line_num++);
 
-        // If we have more lines than ASCII art, add blank lines to match
+        // Line 23: Version - Now with proper label
+        std::string version = " [v1.0]";
+        print_label_value("claudefetch Version:", version, line_num++);
+
+        // Add any remaining ASCII art lines
         while (line_num < AsciiArt::ARCH.size()) {
             std::cout << AsciiArt::ARCH[line_num] << std::endl;
             line_num++;
         }
 
-        // Menu separator
         std::cout << Colors::BOLD << Colors::L_CYAN << std::string(80, '=') << Colors::RESET << std::endl;
     }
 
     static void display_menu() {
         std::cout << Colors::BOLD << Colors::L_CYAN << "claudefetch System Maintenance Menu:" << Colors::RESET << std::endl;
-        std::cout << Colors::L_CYAN << "  (A)udit Full System" << Colors::WHITE << "   "
-        << Colors::L_CYAN << "(C)heck Updates" << Colors::WHITE << "   "
+        std::cout << Colors::L_CYAN << "  (A)udit Full System" << Colors::L_CYAN << "   "
+        << Colors::L_CYAN << "(C)heck Updates" << Colors::L_CYAN << "   "
         << Colors::L_CYAN << "(F)ree Memory" << std::endl;
-        std::cout << Colors::L_CYAN << "  (R)emove Cache" << Colors::WHITE << "        "
-        << Colors::L_CYAN << "(U)pdate System" << Colors::WHITE << "       "
+        std::cout << Colors::L_CYAN << "  (R)emove Cache" << Colors::L_CYAN << "        "
+        << Colors::L_CYAN << "(U)pdate System" << Colors::L_CYAN << "       "
         << Colors::L_CYAN << "(Q)uit to Shell" << std::endl;
         std::cout << Colors::BOLD << Colors::L_CYAN << "\nSelect option: " << Colors::RESET;
         std::cout.flush();
     }
 };
 
-// Actions class - FIXED SINGLE ENTER
+// Actions class
 class Actions {
 public:
     static void freemem() {
@@ -800,7 +1300,6 @@ public:
 
     static void press_enter() {
         std::cout << Colors::BOLD << Colors::L_CYAN << "\n*** PRESS Enter to continue ***" << Colors::RESET << std::endl;
-        // SINGLE Enter press - no double input
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
@@ -821,10 +1320,9 @@ void execute_shell_command() {
     }
 
     if (!command.empty()) {
-        std::cout << Colors::CYAN << "Executing: " << command << Colors::RESET << std::endl;
+        std::cout << Colors::L_CYAN << "Executing: " << command << Colors::RESET << std::endl;
         system(command.c_str());
         std::cout << Colors::L_CYAN << "\nCommand completed. Press Enter to continue..." << Colors::RESET << std::endl;
-        // SINGLE Enter press
         std::string dummy;
         std::getline(std::cin, dummy);
     }
@@ -833,7 +1331,6 @@ void execute_shell_command() {
 void selection() {
     char choice;
     std::cin >> choice;
-    // SINGLE clear - not double
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     switch(tolower(choice)) {
