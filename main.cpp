@@ -29,21 +29,25 @@
 
 namespace fs = std::filesystem;
 
-// Colors class - All bright cyan theme
+// Colors class - Keep cyan theme for labels and text
 class Colors {
 public:
     static const std::string RESET;
     static const std::string BOLD;
     static const std::string CYAN;
     static const std::string L_CYAN;
+    static const std::string RED;  // Only for ASCII art
+    static const std::string L_RED; // Only for ASCII art
 };
 
 const std::string Colors::RESET = "\033[0m";
 const std::string Colors::BOLD = "\033[1m";
 const std::string Colors::CYAN = "\033[96m";
 const std::string Colors::L_CYAN = "\033[96m";
+const std::string Colors::RED = "\033[91m";    // For ASCII art
+const std::string Colors::L_RED = "\033[91m";  // For ASCII art
 
-// ASCII art for claudefetch - All bright cyan
+// ASCII art for claudefetch - RED theme only
 class AsciiArt {
 public:
     static const std::vector<std::string> ARCH;
@@ -51,37 +55,37 @@ public:
 };
 
 const std::vector<std::string> AsciiArt::ARCH = {
-    Colors::L_CYAN + "                    " + Colors::RESET,
-    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
-    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
-    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
-    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
-    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
-    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
-    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
-    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
-    Colors::L_CYAN + "                    " + Colors::RESET
+    Colors::L_RED + "                    " + Colors::RESET,
+    Colors::L_RED + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_RED + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_RED + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_RED + "c:::::c             " + Colors::RESET,
+    Colors::L_RED + "c:::::c             " + Colors::RESET,
+    Colors::L_RED + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_RED + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_RED + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_RED + "                    " + Colors::RESET
 };
 
 const std::vector<std::string> AsciiArt::DEFAULT = {
-    Colors::L_CYAN + "                    " + Colors::RESET,
-    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
-    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
-    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
-    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
-    Colors::L_CYAN + "c:::::c             " + Colors::RESET,
-    Colors::L_CYAN + "c::::::c     ccccccc" + Colors::RESET,
-    Colors::L_CYAN + "c:::::::cccccc:::::c" + Colors::RESET,
-    Colors::L_CYAN + " c:::::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + "  cc:::::::::::::::c" + Colors::RESET,
-    Colors::L_CYAN + "    cccccccccccccccc" + Colors::RESET,
-    Colors::L_CYAN + "                    " + Colors::RESET
+    Colors::L_RED + "                    " + Colors::RESET,
+    Colors::L_RED + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_RED + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_RED + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_RED + "c:::::c             " + Colors::RESET,
+    Colors::L_RED + "c:::::c             " + Colors::RESET,
+    Colors::L_RED + "c::::::c     ccccccc" + Colors::RESET,
+    Colors::L_RED + "c:::::::cccccc:::::c" + Colors::RESET,
+    Colors::L_RED + " c:::::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + "  cc:::::::::::::::c" + Colors::RESET,
+    Colors::L_RED + "    cccccccccccccccc" + Colors::RESET,
+    Colors::L_RED + "                    " + Colors::RESET
 };
 
 // SystemInfo class - Arch Linux + KDE ONLY, NO DEFAULTS
@@ -833,7 +837,9 @@ public:
         std::string line;
         std::string model;
         int cores = 0;
-        float max_freq = 0.0;
+        int threads = 0;
+        float base_freq = 0.0;
+        float current_freq = 0.0;
 
         while (std::getline(cpuinfo, line)) {
             if (line.find("model name") == 0) {
@@ -846,33 +852,144 @@ public:
                 if (pos != std::string::npos) {
                     cores = std::stoi(line.substr(pos + 2));
                 }
+            } else if (line.find("siblings") == 0) {
+                size_t pos = line.find(": ");
+                if (pos != std::string::npos) {
+                    threads = std::stoi(line.substr(pos + 2));
+                }
             } else if (line.find("cpu MHz") == 0) {
                 size_t pos = line.find(": ");
                 if (pos != std::string::npos) {
                     float freq = std::stof(line.substr(pos + 2)) / 1000.0;
-                    if (freq > max_freq) max_freq = freq;
+                    if (current_freq < freq) {
+                        current_freq = freq;
+                    }
                 }
             }
         }
 
-        if (!model.empty() && cores > 0 && max_freq > 0.0) {
+        // Try to get base frequency from model name
+        if (!model.empty()) {
+            std::regex freq_regex(R"((@\s*(\d+\.?\d*)\s*GHz))");
+            std::smatch match;
+            if (std::regex_search(model, match, freq_regex)) {
+                try {
+                    base_freq = std::stof(match[2]);
+                } catch (...) {
+                    base_freq = 0.0;
+                }
+            }
+        }
+
+        // Get current frequency from /proc/cpuinfo or sysfs
+        if (current_freq == 0.0) {
+            std::string freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq";
+            std::ifstream freq_stream(freq_file);
+            if (freq_stream.is_open()) {
+                std::string freq_str;
+                if (std::getline(freq_stream, freq_str)) {
+                    try {
+                        current_freq = std::stof(freq_str) / 1000000.0;
+                    } catch (...) {}
+                }
+            }
+        }
+
+        if (!model.empty()) {
             std::stringstream ss;
-            ss << model << " (" << cores << ") @ " << std::fixed << std::setprecision(2) << max_freq << " GHz";
+            ss << model;
+
+            if (cores > 0 && threads > 0) {
+                ss << " (" << cores;
+                if (threads > cores) {
+                    ss << "C/" << threads << "T";
+                } else {
+                    ss << ")";
+                }
+            }
+
+            if (current_freq > 0.0) {
+                ss << " @ " << std::fixed << std::setprecision(2) << current_freq << " GHz";
+            } else if (base_freq > 0.0) {
+                ss << " @ " << std::fixed << std::setprecision(2) << base_freq << " GHz";
+            }
+
             return ss.str();
         }
         return "";
     }
 
     static std::string get_gpu() {
+        std::string lspci_output = run_cmd("lspci 2>/dev/null");
+        std::istringstream iss(lspci_output);
+        std::string line;
+        std::vector<std::string> gpus;
+
+        while (std::getline(iss, line)) {
+            if (line.find("VGA") != std::string::npos ||
+                line.find("3D") != std::string::npos ||
+                line.find("Display") != std::string::npos) {
+
+                size_t colon = line.find(": ");
+            if (colon != std::string::npos) {
+                std::string gpu_info = line.substr(colon + 2);
+
+                // Clean up the GPU info
+                // Remove common redundant prefixes
+                std::string clean_gpu = gpu_info;
+
+                // Add classification
+                std::string type = "[Integrated]";
+                if (gpu_info.find("NVIDIA") != std::string::npos) {
+                    type = "[Dedicated]";
+                } else if (gpu_info.find("AMD") != std::string::npos) {
+                    type = "[Dedicated]";
+                } else if (gpu_info.find("Intel") != std::string::npos) {
+                    if (gpu_info.find("UHD Graphics") != std::string::npos ||
+                        gpu_info.find("HD Graphics") != std::string::npos ||
+                        gpu_info.find("Iris") != std::string::npos) {
+                        type = "[Integrated]";
+                        }
+                } else if (gpu_info.find("Radeon") != std::string::npos) {
+                    type = "[Dedicated]";
+                } else if (gpu_info.find("GeForce") != std::string::npos) {
+                    type = "[Dedicated]";
+                } else if (gpu_info.find("Quadro") != std::string::npos) {
+                    type = "[Dedicated]";
+                }
+
+                gpus.push_back(clean_gpu + " " + type);
+            }
+                }
+        }
+
+        if (!gpus.empty()) {
+            std::stringstream result;
+            for (size_t i = 0; i < gpus.size(); i++) {
+                if (i > 0) {
+                    result << ", ";
+                }
+                result << gpus[i];
+            }
+            return result.str();
+        }
+
+        // Fallback to lspci grep
         std::string lspci = run_cmd("lspci | grep -E 'VGA|3D|Display' | head -1");
         if (!lspci.empty()) {
             size_t colon = lspci.find(": ");
             if (colon != std::string::npos) {
                 std::string gpu_info = lspci.substr(colon + 2);
-                if (gpu_info.find("Integrated") != std::string::npos) {
-                    gpu_info += " [Integrated]";
-                }
-                return gpu_info;
+                std::string type = "[Integrated]";
+
+                if (gpu_info.find("NVIDIA") != std::string::npos ||
+                    gpu_info.find("AMD") != std::string::npos ||
+                    gpu_info.find("Radeon") != std::string::npos ||
+                    gpu_info.find("GeForce") != std::string::npos) {
+                    type = "[Dedicated]";
+                    }
+
+                    return gpu_info + " " + type;
             }
         }
         return "";
@@ -1082,16 +1199,16 @@ public:
             // Add spaces for 3cm gap
             std::cout << std::string(12, ' ');
 
-            // Print label and value
+            // Print label and value - Both in cyan, values are BOLD
             std::cout << Colors::BOLD << Colors::L_CYAN
             << std::left << std::setw(MAX_LABEL_WIDTH) << label
-            << Colors::RESET << Colors::L_CYAN << value << Colors::RESET;
+            << Colors::RESET << Colors::BOLD << Colors::L_CYAN << value << Colors::RESET;
         } else {
             // For lines beyond ASCII art, just indent
             std::cout << std::string(label_start, ' ')
             << Colors::BOLD << Colors::L_CYAN
             << std::left << std::setw(MAX_LABEL_WIDTH) << label
-            << Colors::RESET << Colors::L_CYAN << value << Colors::RESET;
+            << Colors::RESET << Colors::BOLD << Colors::L_CYAN << value << Colors::RESET;
         }
         std::cout << std::endl;
     }
@@ -1212,7 +1329,7 @@ public:
         print_label_value("Locale:", locale, line_num++);
 
         // Line 23: Version - Now with proper label
-        std::string version = " [v1.0]";
+        std::string version = " [v1.0 26-01-2026]";
         print_label_value("claudefetch Version:", version, line_num++);
 
         // Add any remaining ASCII art lines
@@ -1226,12 +1343,12 @@ public:
 
     static void display_menu() {
         std::cout << Colors::BOLD << Colors::L_CYAN << "claudefetch System Maintenance Menu:" << Colors::RESET << std::endl;
-        std::cout << Colors::L_CYAN << "  (A)udit Full System" << Colors::L_CYAN << "   "
-        << Colors::L_CYAN << "(C)heck Updates" << Colors::L_CYAN << "   "
-        << Colors::L_CYAN << "(F)ree Memory" << std::endl;
-        std::cout << Colors::L_CYAN << "  (R)emove Cache" << Colors::L_CYAN << "        "
-        << Colors::L_CYAN << "(U)pdate System" << Colors::L_CYAN << "       "
-        << Colors::L_CYAN << "(Q)uit to Shell" << std::endl;
+        std::cout << Colors::BOLD << Colors::L_CYAN << "  (A)udit Full System" << Colors::L_CYAN << "   "
+        << Colors::BOLD << Colors::L_CYAN << "(C)heck Updates" << Colors::L_CYAN << "   "
+        << Colors::BOLD << Colors::L_CYAN << "(F)ree Memory" << Colors::RESET << std::endl;
+        std::cout << Colors::BOLD << Colors::L_CYAN << "  (R)emove Cache" << Colors::L_CYAN << "        "
+        << Colors::BOLD << Colors::L_CYAN << "(U)pdate System" << Colors::L_CYAN << "       "
+        << Colors::BOLD << Colors::L_CYAN << "(Q)uit to Shell" << Colors::RESET << std::endl;
         std::cout << Colors::BOLD << Colors::L_CYAN << "\nSelect option: " << Colors::RESET;
         std::cout.flush();
     }
